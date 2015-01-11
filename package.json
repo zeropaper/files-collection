@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "docs": "./node_modules/mocha/bin/mocha -R markdown test/*Spec.js > DOCUMENTATION.md",
-    "test": "./node_modules/mocha/bin/mocha test/"
+    "test": "./node_modules/mocha/bin/mocha test/*Spec.js"
   },
   "repository": {
     "type": "git",
@@ -18,7 +18,7 @@
     "system",
     "tools"
   ],
-  "author": "Valentin Vago <valentin.vago@gmail.com>",
+  "author": "Valentin Vago <zeropaper@irata.ch>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/zeropaper/files-collection/issues"
