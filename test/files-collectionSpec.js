@@ -24,14 +24,14 @@ describe('FilesCollection', function () {
 
     it('instanciate', function () {
       expect(function () {
-        filesCollection = new FilesCollection([
-          { filepath: 'index.js.html' },
-          { filepath: 'fictive/filepath/scripts.js.html' },
-          { filepath: 'fictive/filepath/styles.less.html' },
-          { filepath: 'fictive/index.js.html' },
-          { filepath: 'fictive/other-filepath/index.html' },
-          { filepath: 'fictive/other-filepath/styles.less.html' }
-        ], {
+        filesCollection = new FilesCollection(FilesCollection.expand([
+          'index.js.html',
+          'fictive/filepath/scripts.js.html',
+          'fictive/filepath/styles.less.html',
+          'fictive/index.js.html',
+          'fictive/other-filepath/index.html',
+          'fictive/other-filepath/styles.less.html'
+        ]), {
           active: 'fictive/filepath/scripts.js.html'
         });
       }).not.to.throwError(err('instanciate'));

@@ -358,3 +358,9 @@ var FilesCollection = module.exports = Collection.extend({
 FilesCollection.File = FileModel;
 
 FilesCollection.Directory = DirectoryCollection;
+
+FilesCollection.expand = function (arr) {
+  return arr.map(function (item) {
+    return { filepath: item };
+  });
+};
