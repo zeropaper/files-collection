@@ -1,6 +1,6 @@
 {
   "name": "files-collection",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A ampersand.js set of classes to help files and directories handling.",
   "main": "index.js",
   "scripts": {
