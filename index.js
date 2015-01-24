@@ -231,6 +231,23 @@ FileModel = Model.extend({
       return true;
     }
     return this.dirname.indexOf(dirname) === 0;
+  },
+
+  index: function (indexNames) {
+    if (this.isFile) {
+      return false;
+    }
+
+    var name = indexNames || this.indexName || 'README.md';
+    var names = Array.isArray(name) ? name : [name];
+
+    for (var n in names) {
+      var model = this.files.get(this.filepath + '/' + names[n]);
+      if (model) {
+        return model;
+      }
+    }
+    return false;
   }
 });
 
@@ -243,6 +260,20 @@ var FilesCollection = module.exports = Collection.extend({
     'dirname',
     'extname'
   ],
+
+
+  index: function (indexNames) {
+    var name = indexNames || this.indexName || 'README.md';
+    var names = Array.isArray(name) ? name : [name];
+
+    for (var n in names) {
+      var model = this.get(names[n]);
+      if (model) {
+        return model;
+      }
+    }
+    return false;
+  },
 
   active: '',
 

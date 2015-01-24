@@ -11,10 +11,12 @@ function err(label) {
 
 describe('FilesCollection', function () {
   var FilesCollection;
+  var expand;
 
   it('loads', function () {
     expect(function () {
       FilesCollection = require('./../index');
+      expand = FilesCollection.expand;
     }).not.to.throwError(err('loading FilesCollection'));
   });
 
@@ -24,15 +26,16 @@ describe('FilesCollection', function () {
 
     it('instanciate', function () {
       expect(function () {
-        filesCollection = new FilesCollection(FilesCollection.expand([
-          'index.js.html',
-          'fictive/filepath/scripts.js.html',
-          'fictive/filepath/styles.less.html',
-          'fictive/index.js.html',
-          'fictive/other-filepath/index.html',
-          'fictive/other-filepath/styles.less.html'
+        filesCollection = new FilesCollection(expand([
+          'README.md',
+          'index.js',
+          'fictive/filepath/scripts.js',
+          'fictive/filepath/styles.less',
+          'fictive/index.js',
+          'fictive/other-filepath/index',
+          'fictive/other-filepath/styles.less'
         ]), {
-          active: 'fictive/filepath/scripts.js.html'
+          active: 'fictive/filepath/scripts.js'
         });
       }).not.to.throwError(err('instanciate'));
     });
@@ -59,7 +62,7 @@ describe('FilesCollection', function () {
 
         expect(tree.filepath).to.be('.');
 
-        expect(tree.files.length).to.be(2);
+        expect(tree.files.length).to.be(3);
         expect(tree.files.at(0)).to.be.a(FilesCollection.File);
       });
     });
@@ -82,6 +85,40 @@ describe('FilesCollection', function () {
         }).length).to.be(1);
       });
     });
+
+
+    describe('index()', function () {
+      it('returns the README.md by default', function () {
+        var index;
+        expect(function () {
+          index = filesCollection.index();
+        }).not.to.throwError(err('index'));
+
+        expect(index.filepath).to.be('README.md');
+      });
+    });
+
+
+    describe('index(basenames)', function () {
+      var filesCollection;
+      var result;
+
+      before(function () {
+        filesCollection = new FilesCollection(expand([
+          'README.md',
+          'file.txt',
+          'scripts.js'
+        ]));
+      });
+
+      it('returns the first found in the array', function () {
+        expect(filesCollection.index([
+          'not-extisting.pdf',
+          'file.txt',
+          'README.md'
+        ]).filepath).to.be('file.txt');
+      });
+    });
   });
 
 
@@ -92,11 +129,11 @@ describe('FilesCollection', function () {
     it('instanciate', function () {
       expect(function () {
         fileModelA = new FilesCollection.File({
-          filepath: 'index.html'
+          filepath: 'index'
         });
 
         fileModelB = new FilesCollection.File({
-          filepath: 'fictive/filepath/styles.less.html'
+          filepath: 'fictive/filepath/styles.less'
         });
       }).not.to.throwError(err('model initialization'));
     });
@@ -112,22 +149,51 @@ describe('FilesCollection', function () {
 
     describe('relative(filepath)', function () {
       it('returns the relative path to filepath', function () {
-        expect(fileModelA.relative('fictive/filepath/styles.less.html')).to.be('fictive/filepath/styles.less.html');
+        expect(fileModelA.relative('fictive/filepath/styles.less')).to.be('fictive/filepath/styles.less');
         expect(fileModelA.relative('fictive/filepath')).to.be('fictive/filepath');
 
         expect(fileModelB.relative('fictive/filepath')).to.be('');
         expect(fileModelB.relative('fictive')).to.be('..');
         expect(fileModelB.relative('')).to.be('../..');
-        expect(fileModelB.relative('index.html')).to.be('../../index.html');
+        expect(fileModelB.relative('index')).to.be('../../index');
       });
     });
 
 
     describe('relative(model)', function () {
       it('returns the relative path to model', function () {
-        expect(fileModelA.relative(fileModelB)).to.be('fictive/filepath/styles.less.html');
+        expect(fileModelA.relative(fileModelB)).to.be('fictive/filepath/styles.less');
 
-        expect(fileModelB.relative(fileModelA)).to.be('../../index.html');
+        expect(fileModelB.relative(fileModelA)).to.be('../../index');
+      });
+    });
+
+
+    describe('index()', function () {
+      var filesCollection;
+
+      before(function () {
+        filesCollection = new FilesCollection(expand([
+          'README.md',
+          'file.txt',
+          'fictive/README.md',
+          'fictive/filepath/index.html'
+        ]));
+      });
+
+
+      it('returns README.md model by default', function () {
+        expect(filesCollection.get('file.txt').index()).to.be(false);
+      });
+
+
+      it('returns `false` when not a directory', function () {
+        expect(filesCollection.get('file.txt').index()).to.be(false);
+      });
+
+
+      it('returns `false` when not found', function () {
+        expect(filesCollection.get('fictive/filepath').index()).to.be(false);
       });
     });
   });
