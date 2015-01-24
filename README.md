@@ -3,7 +3,7 @@
 A [Ampersand.js](http://ampersandjs.com) set of classes to provide tools
 to browse and manage files and directories (existing or not).
 
-Originally written for [grunt-whatsupdoc](http://github.com/zeropaper/grunt-whatsupdoc),
+Originally written for [grunt-gtfd](http://github.com/zeropaper/grunt-gtfd),
 a [grunt.js](http://gruntjs.com) task to generate project wide documentation.
 
 ## Usage
