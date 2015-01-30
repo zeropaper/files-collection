@@ -1,3 +1,11 @@
+// # FilesCollection
+//
+// @module FilesCollection
+// @environment browser, node
+// _name FilesCollection
+// @extends AmpersandCollection
+//
+// A CommonJS module based on Ampersand.js aimed to manage virtual files.
 'use strict';
 /* jshint node: true, browser: true */
 /* global require: false */
@@ -12,18 +20,38 @@ var Model = require('ampersand-model');
 
 
 
-// ##### internal extname
+// @function extname
+// @private
+// @param {String} str  - is a path string
+// @returns {String}    - the base name of `str` **always** without `.html` extension
 function extname(str) {
   return path.extname(path.basename(str, '.html'));
 }
 
-// ##### internal toProject
+// @function toProject
+// @private
+// @param {String} str  - is the path below the the root of the project
+// @returns {String}    - the relative path to the project root
+//                        (generally something like: '../../..')
 function toProject(str) {
-  return str.split('/').length > 1 ? path.dirname(str).replace(/([^\/]+)/gi, '..') : '';
+  return str.split('/').length > 1 ?
+          path.dirname(str).replace(/([^\/]+)/gi, '..') :
+          '';
 }
 
+// @function index
+// @private
+// @param {Object} [options] - a set of options
+// @returns {AmpersandMode|AmpersandState|false}
+
+
+// @typedef
+// @name FileModel
+// @extends AmpersandModel
 var FileModel;
 
+// @typedef DirectoryCollection
+// @extends AmpersandCollection
 var DirectoryCollection = Collection.extend({
   mainIndex: 'filepath',
   idAttribute: 'filepath',
@@ -42,6 +70,8 @@ var DirectoryCollection = Collection.extend({
 
   model: FileModel
 });
+
+
 
 FileModel = Model.extend({
   idAttribute: 'filepath',
@@ -66,6 +96,23 @@ FileModel = Model.extend({
       cache: false,
       fn: function () {
         return this.files.length > 0;
+      }
+    },
+
+    isIndex: {
+      deps: ['filepath'],
+      cache: false,
+      fn: function () {
+        var index = this.directory.index();
+        return index ? index.filepath === this.filepath : false;
+      }
+    },
+
+    directory: {
+      deps: ['filepath', 'collection'],
+      cache: false,
+      fn: function () {
+        return this.collection.get(this.dirname);
       }
     },
 
@@ -98,7 +145,7 @@ FileModel = Model.extend({
     toProjectDir: {
       deps: ['filepath'],
       fn: function () {
-        return toProject(this.filepath);
+        return toProject(this.isIndex ? path.join(this.filepath, 'index') : this.filepath);
       }
     },
 
@@ -120,7 +167,17 @@ FileModel = Model.extend({
       deps: ['filepath'],
       cache: false,
       fn: function () {
-        return path.relative(path.dirname(this.collection.active), this.filepath);
+        var to = this.filepath;
+        var active = this.collection.getActive();
+
+        if (this.isIndex) {
+          to = path.join(this.dirname, 'index');
+        }
+        else if (this.isDir && this.index()) {
+          to = path.join(this.filepath, 'index');
+        }
+
+        return active.relative(to);
       }
     },
 
@@ -198,20 +255,6 @@ FileModel = Model.extend({
     });
   },
 
-  resolve: function (obj) {
-    var destination;
-    if (typeof obj === 'string') {
-      destination = obj;
-    }
-    else if (obj instanceof FileModel) {
-      destination = obj.filepath;
-    }
-
-    return typeof destination === 'string' ?
-            path.resolve(this.dirname, destination) :
-            this.toProjectDir;
-  },
-
   relative: function (obj) {
     var destination;
     if (typeof obj === 'string') {
@@ -222,7 +265,7 @@ FileModel = Model.extend({
     }
 
     return typeof destination === 'string' ?
-            path.relative(this.dirname, destination) :
+            path.relative(this.isDir ? this.filepath : this.dirname, destination) :
             this.toProjectDir;
   },
 
@@ -240,9 +283,12 @@ FileModel = Model.extend({
 
     var name = indexNames || this.indexName || 'README.md';
     var names = Array.isArray(name) ? name : [name];
+    var filepathPrefix = this.isRootDir ? '' : (this.filepath + '/');
 
     for (var n in names) {
-      var model = this.files.get(this.filepath + '/' + names[n]);
+      var indexFilepath = filepathPrefix + names[n];
+      var model = this.files.get(indexFilepath);
+
       if (model) {
         return model;
       }
@@ -250,6 +296,8 @@ FileModel = Model.extend({
     return false;
   }
 });
+
+
 
 var FilesCollection = module.exports = Collection.extend({
   model: FileModel,
@@ -260,20 +308,6 @@ var FilesCollection = module.exports = Collection.extend({
     'dirname',
     'extname'
   ],
-
-
-  index: function (indexNames) {
-    var name = indexNames || this.indexName || 'README.md';
-    var names = Array.isArray(name) ? name : [name];
-
-    for (var n in names) {
-      var model = this.get(names[n]);
-      if (model) {
-        return model;
-      }
-    }
-    return false;
-  },
 
   active: '',
 
@@ -290,6 +324,11 @@ var FilesCollection = module.exports = Collection.extend({
     if (!this.basePath && options.basePath) {
       this.basePath = options.basePath;
     }
+  },
+
+
+  index: function (indexNames) {
+    return this.get('.').index(indexNames);
   },
 
 
@@ -378,13 +417,17 @@ var FilesCollection = module.exports = Collection.extend({
 
 
   setActive: function (active) {
-    if (arguments.length && active !== this.active) {
+    active = active || '';
+    if (active !== this.active) {
       this.active = active || '';
       this.trigger('active', active, this);
     }
+  },
+
+  getActive: function () {
+    return this.get(this.active);
   }
 });
-
 
 FilesCollection.File = FileModel;
 
