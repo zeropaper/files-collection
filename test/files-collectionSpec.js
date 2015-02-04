@@ -1,7 +1,8 @@
 'use strict';
-/* jshint node: true, browser: true */
+/* jshint node: true, browser: true, unused: false */
 /* global require: false, describe: false, xdescribe: false, it: false */
 var expect = require('expect.js');
+var path = require('path');
 
 function err(label) {
   return function (err) {
@@ -135,6 +136,9 @@ describe('FilesCollection', function () {
           'index',
           // the fictive directory has no "index" (README.md)
           'fictive/file.js',
+          // and some files do not exists
+          'does-not-exists.md',
+          'does-not-exists.js',
           //
           'fictive/filepath/scripts.js',
           'fictive/filepath/styles.less',
@@ -144,13 +148,14 @@ describe('FilesCollection', function () {
           'fictive/other-filepath/index',
           'fictive/other-filepath/styles.less'
         ]), {
+          cwd: path.join(__dirname, 'example'),
           active: 'fictive/filepath/scripts.js'
         });
       }).not.to.throwError(err('model initialization'));
     });
 
 
-    describe('index()', function () {
+    describe('index() function', function () {
       it('returns README.md model by default', function () {
         expect(get('README.md').isIndex).to.be(true);
         expect(filesCollection.index()).not.to.be(false);
@@ -168,22 +173,7 @@ describe('FilesCollection', function () {
     });
 
 
-
-    describe('isIndex', function () {
-      it('is true when the file is considered as "index" of its directory', function () {
-        expect(get('README.md').isIndex).to.be(true);
-        expect(get('fictive/other-filepath/README.md').isIndex).to.be(true);
-      });
-
-      it('is false otherwise', function () {
-        expect(get('index').isIndex).to.be(false);
-        expect(get('fictive/filepath/scripts.js').isIndex).to.be(false);
-        expect(get('fictive/other-filepath/index').isIndex).to.be(false);
-      });
-    });
-
-
-    describe('relative()', function () {
+    describe('relative() method', function () {
       describe('for the "index" model', function () {
         it ('resturns "" (empty string)', function () {
           expect(get('index').relative()).to.be('');
@@ -199,7 +189,7 @@ describe('FilesCollection', function () {
     });
 
 
-    describe('relative(filepath)', function () {
+    describe('relative(filepath) method', function () {
       describe('for the "index" model', function () {
         describe('to "fictive/filepath/styles.less"', function () {
           it('returns "fictive/filepath/styles.less"', function () {
@@ -255,7 +245,7 @@ describe('FilesCollection', function () {
     });
 
 
-    describe('relative(model)', function () {
+    describe('relative(model) method', function () {
       describe('for the "index" model', function () {
         describe('to "fictive/filepath/styles.less" model', function () {
           it('returns "fictive/filepath/styles.less"', function () {
@@ -312,7 +302,21 @@ describe('FilesCollection', function () {
 
 
 
-    describe('fileurl', function () {
+    describe('isIndex derivate', function () {
+      it('is true when the file is considered as "index" of its directory', function () {
+        expect(get('README.md').isIndex).to.be(true);
+        expect(get('fictive/other-filepath/README.md').isIndex).to.be(true);
+      });
+
+      it('is false otherwise', function () {
+        expect(get('index').isIndex).to.be(false);
+        expect(get('fictive/filepath/scripts.js').isIndex).to.be(false);
+        expect(get('fictive/other-filepath/index').isIndex).to.be(false);
+      });
+    });
+
+
+    describe('fileurl derivate', function () {
       describe('when the active path is "fictive/filepath/scripts.js"', function () {
         describe('of "index"', function () {
           it('is "../../index"', function () {
