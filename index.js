@@ -12,7 +12,7 @@
 var path = require('path');
 
 var Collection = require('ampersand-collection');
-var Model = require('ampersand-model');
+var Model = require('ampersand-state');
 
 
 
